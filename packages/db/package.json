@@ -1,0 +1,31 @@
+{
+  "name": "@repo/db",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "exports": {
+    "./supabaseClient": "./src/supabaseClient.ts",
+    "./prismaClient": "./src/prismaClient.ts",
+    "./databaseTypes": "./src/database.types.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.10.7",
+    "esbuild-runner": "^2.2.2",
+    "nodemon": "^3.1.9",
+    "prisma": "^6.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.1",
+    "@supabase/supabase-js": "^2.47.12"
+  }
+}
