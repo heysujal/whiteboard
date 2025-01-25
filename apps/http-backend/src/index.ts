@@ -1,13 +1,13 @@
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import {supabaseClient} from '@repo/db/supabaseClient'
+import { JWT_SECRET } from './config.js';
 
 
 import bcrypt, { hashSync } from 'bcrypt'
+import { middleware } from './middleware.js';
 const app = express();
 const SALT_ROUNDS = 10;
-// TODO: remove this
-const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(express.json());
 
@@ -45,12 +45,15 @@ app.post('/signup', async (req, res) => {
 
 })
 
-app.post('/signin',  async (req: Request, res: Response) => {
+app.post('/signin',  async (req, res) => {
     const {email, password} = req.body;
-    // TODO: Use Zod to add checks
+    // TODO: Use ZOD to add checks
 
     try {
-        const {data} = await supabaseClient.from('whiteboard').select('password, userId').eq('email', email).single();
+        const {data, error:readError} = await supabaseClient.from('whiteboard').select('password, userId').eq('email', email).single();
+        if(readError){
+            throw readError;
+        }
         const hashedPassword = data?.password ?? '';
         const userId = data?.userId;
         const isSamePassword = await bcrypt.compare(password, hashedPassword);
@@ -62,9 +65,24 @@ app.post('/signin',  async (req: Request, res: Response) => {
         res.status(200).json({message: 'Verified!', token: token})
 
     } catch (error) {
-        // comparison failed
+        // For self debugging
+        console.log(error);
         res.status(500).json({status: "Error", message: "Internal Server Error"});
     }
+})
+
+
+app.post('/room', middleware, (req, res)=>{
+    // TODO: DB call to save this user create a room
+    const {userId} = req.user;
+    console.log(userId);
+
+    res.json({
+        roomId: 1234
+    })
+
+    
+
 })
 
 let PORT = process.env.PORT || 3000;

@@ -1,9 +1,10 @@
 {
-  "name": "backend-common",
+  "name": "@repo/backend-common",
   "version": "1.0.0",
   "description": "",
   "exports":{
-    "./types": "./src/types.ts"
+    "./types": "./src/index.ts",
+    "./config": "./config.ts"
   },
   "main": "index.js",
   "scripts": {
