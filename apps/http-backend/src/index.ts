@@ -1,11 +1,12 @@
 import express, { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import {supabaseClient} from '@repo/db/supabaseClient'
-import { JWT_SECRET } from './config.js';
-
-
-import bcrypt, { hashSync } from 'bcrypt'
+import {prismaClient} from "@repo/db/prismaClient"
+import  {JWT_SECRET}  from '@repo/backend-common/config';
+import {SignUpSchema, SignInSchema, CreateRoomSchema} from "@repo/common/types"
+import bcrypt from 'bcryptjs'
 import { middleware } from './middleware.js';
+
 const app = express();
 const SALT_ROUNDS = 10;
 
@@ -13,28 +14,35 @@ app.use(express.json());
 
 
 app.post('/signup', async (req, res) => {
-    const {email, password} = req.body;
-    if(!email || !password){
-        res.status(400).json({status: 'Error', message:'Email and Password are required'});
-        return;
-    }
-
+    
+    
     try{
-        const {data: existingUser, error: fetchError} = await supabaseClient.from('whiteboard')
-        .select('email').eq('email', email).single();
-        if(fetchError && fetchError.code != 'PGRST116'){
-            throw fetchError;
+        const {data: body, error, success} = SignUpSchema.safeParse(req.body);
+        if(error){
+            throw error;
         }
-        if(existingUser){
+        const {email, password, name} = body;
+        if(!email || !password){
+            res.status(400).json({status: 'Error', message:'Email and Password are required'});
+            return;
+        }   
+        // Finding if user already exists
+        const user = await prismaClient.user.findFirst({where: {email: email}, select: {email: true}});
+        if(user){
             res.status(409).json({status: 'Error', message: 'User already exists'});
             return;
         }
+
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-        const {error: insertError} = await supabaseClient.from('whiteboard').insert({email: email, password: hashedPassword});
-        
-        if(insertError){
-            throw insertError;
-        }
+
+        await prismaClient.user.create({
+            data:{
+                email: email,
+                name: name,
+                password: hashedPassword
+            }
+        })
+
         res.status(201).json({status: 'Success', message: 'Signup successful'});
 
     }catch(error){
@@ -46,16 +54,26 @@ app.post('/signup', async (req, res) => {
 })
 
 app.post('/signin',  async (req, res) => {
-    const {email, password} = req.body;
-    // TODO: Use ZOD to add checks
 
     try {
-        const {data, error:readError} = await supabaseClient.from('whiteboard').select('password, userId').eq('email', email).single();
-        if(readError){
-            throw readError;
+        const {data:body, error} = SignInSchema.safeParse(req.body);
+        if(error){
+            throw error;
         }
+        const {email, password} = body;
+
+        const data = await prismaClient.user.findFirst({
+            select: {
+                password: true,
+                id: true
+            },
+            where: {
+                email
+            }
+        })
+
         const hashedPassword = data?.password ?? '';
-        const userId = data?.userId;
+        const userId = data?.id;
         const isSamePassword = await bcrypt.compare(password, hashedPassword);
         if(!isSamePassword){
             res.status(401).json({ status: 'Unauthorized', message: 'Invalid Credentials'});
@@ -72,16 +90,34 @@ app.post('/signin',  async (req, res) => {
 })
 
 
-app.post('/room', middleware, (req, res)=>{
-    // TODO: DB call to save this user create a room
-    const {userId} = req.user;
-    console.log(userId);
+app.post('/room', middleware, async(req, res)=>{
 
-    res.json({
-        roomId: 1234
-    })
+    try {
+        const {data: roomData, error} = CreateRoomSchema.safeParse(req.body);
+        console.log(roomData)
+        if(error){
+            throw error;
+        }
+        // TODO: DB call to save this user create a room
+        const userId = req.user?.userId;
 
-    
+        const room = await prismaClient.room.create({
+            data:{
+                slug: roomData.roomName,
+                adminId: userId
+            }
+        })
+
+
+        res.status(201).json({status: "Success", message: "Room Created Successfully", room: room.id})
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({status: "Error", message: "Internal Error Occured"});
+    }
+})
+
+app.get('/chats', middleware,(req, res) => {
 
 })
 

@@ -18,3 +18,8 @@ Add this to package.json
 - Setup ws and gatekeep using jwt
 - Adding Supabase
 - Create DB and Common package for Zod Schema and JWT_secret
+- Use Prisma
+pnpm prisma install,
+npx primsa init =>  Add Schema,
+npx prisma migrate dev --name init_schema 
+npx prisma generate -> Generates a client

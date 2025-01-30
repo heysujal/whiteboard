@@ -34,27 +34,122 @@ export type Database = {
   }
   public: {
     Tables: {
-      whiteboard: {
+      _prisma_migrations: {
         Row: {
-          created_at: string
-          email: string
+          applied_steps_count: number
+          checksum: string
+          finished_at: string | null
+          id: string
+          logs: string | null
+          migration_name: string
+          rolled_back_at: string | null
+          started_at: string
+        }
+        Insert: {
+          applied_steps_count?: number
+          checksum: string
+          finished_at?: string | null
+          id: string
+          logs?: string | null
+          migration_name: string
+          rolled_back_at?: string | null
+          started_at?: string
+        }
+        Update: {
+          applied_steps_count?: number
+          checksum?: string
+          finished_at?: string | null
+          id?: string
+          logs?: string | null
+          migration_name?: string
+          rolled_back_at?: string | null
+          started_at?: string
+        }
+        Relationships: []
+      }
+      Chat: {
+        Row: {
           id: number
-          password: string
+          message: string
+          roomId: number
           userId: string
         }
         Insert: {
-          created_at?: string
-          email: string
           id?: number
-          password: string
-          userId?: string
+          message: string
+          roomId: number
+          userId: string
         }
         Update: {
-          created_at?: string
-          email?: string
           id?: number
-          password?: string
+          message?: string
+          roomId?: number
           userId?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Chat_roomId_fkey"
+            columns: ["roomId"]
+            isOneToOne: false
+            referencedRelation: "Room"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Chat_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Room: {
+        Row: {
+          adminId: string
+          createdAt: string
+          id: number
+          slug: string
+        }
+        Insert: {
+          adminId: string
+          createdAt?: string
+          id?: number
+          slug: string
+        }
+        Update: {
+          adminId?: string
+          createdAt?: string
+          id?: number
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Room_adminId_fkey"
+            columns: ["adminId"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      User: {
+        Row: {
+          email: string
+          id: string
+          name: string
+          password: string
+        }
+        Insert: {
+          email: string
+          id: string
+          name: string
+          password: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          name?: string
+          password?: string
         }
         Relationships: []
       }
