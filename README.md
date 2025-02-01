@@ -19,7 +19,16 @@ Add this to package.json
 - Adding Supabase
 - Create DB and Common package for Zod Schema and JWT_secret
 - Use Prisma
-pnpm prisma install,
-npx primsa init =>  Add Schema,
-npx prisma migrate dev --name init_schema 
-npx prisma generate -> Generates a client
+- pnpm prisma install,
+- npx primsa init =>  Add Schema,
+- npx prisma migrate dev --name init_schema 
+- npx prisma generate -> Generates a client
+- ws layer, room management and broadcast messages
+
+
+- Adding ws logic on the backend
+
+- State Management on the backend => Stateful Socket Server
+- Same User Can Join Multiple Rooms
+- Approach1: Global Variable
+

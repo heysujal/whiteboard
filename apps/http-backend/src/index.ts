@@ -101,6 +101,8 @@ app.post('/room', middleware, async(req, res)=>{
         // TODO: DB call to save this user create a room
         const userId = req.user?.userId;
 
+        // find id(integer) using existing slug or by creating a new room
+
         const room = await prismaClient.room.create({
             data:{
                 slug: roomData.roomName,
@@ -117,8 +119,24 @@ app.post('/room', middleware, async(req, res)=>{
     }
 })
 
-app.get('/chats', middleware,(req, res) => {
-
+app.get('/chats/:roomId', middleware, async(req, res) => {
+    // Checks that can be added -> room permissions
+    // Rate limiting -> Running for loop might fill the db
+    const roomId = parseInt(req.params.roomId);
+    try {
+        const savedChats = await prismaClient.chat.findMany({
+            where: {
+                roomId: roomId
+            },
+            orderBy:{
+                id: 'desc'
+            },
+            take: 50
+        });
+        res.status(200).json(savedChats);
+    } catch (error) {
+        console.log(error)
+    }
 })
 
 let PORT = process.env.PORT || 3000;
