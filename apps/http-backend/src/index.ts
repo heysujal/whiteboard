@@ -6,11 +6,12 @@ import  {JWT_SECRET}  from '@repo/backend-common/config';
 import {SignUpSchema, SignInSchema, CreateRoomSchema} from "@repo/common/types"
 import bcrypt from 'bcryptjs'
 import { middleware } from './middleware.js';
-
+import cors from 'cors'
 const app = express();
 const SALT_ROUNDS = 10;
 
 app.use(express.json());
+app.use(cors({credentials: true, origin: true}))
 
 
 app.post('/signup', async (req, res) => {
@@ -136,6 +137,25 @@ app.get('/chats/:roomId', middleware, async(req, res) => {
         res.status(200).json(savedChats);
     } catch (error) {
         console.log(error)
+    }
+})
+
+app.get('/room/:slug', middleware, async (req, res) => {
+    // user will give us slug
+    // we find id of room using it
+    let slug = req.params;
+    slug = 'room-1';
+    console.log(req.params)
+    try {
+        const roomData = await prismaClient.room.findFirst({
+            where: {
+                slug
+            }
+        })
+        res.status(200).json(roomData);
+
+    } catch (error) {
+        console.log(error);
     }
 })
 

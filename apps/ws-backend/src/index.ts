@@ -36,8 +36,6 @@ wss.on('connection', function connection(ws, req) {
   // Can a single person join only one room at a time?
   // Or can a single person join multiple room and send messages to multiple rooms
 
-  console.log(`WebSocket Connected!`)
-
   users.push({
     userId: userId,
     rooms: [],
@@ -53,7 +51,6 @@ wss.on('connection', function connection(ws, req) {
       const user = users.find(x => x.ws === ws);
       // Check if this room even exists so that user can join it
       user?.rooms.push(roomNumber);
-
     }
     else if(parsedMessage.type === "leave_room"){
       const roomNumber = parseInt(parsedMessage.roomId);
@@ -102,7 +99,7 @@ wss.on('connection', function connection(ws, req) {
   });
 
   ws.on('error', console.error);
-  ws.send('Socket Connected!');
+  console.log(`Socket Connected!`)
 });
 
 
