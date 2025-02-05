@@ -5,7 +5,7 @@ import { ChatRoomClient } from "./ChatRoomClient";
 
 
 
-export default function Chat({roomId}){
+export default function Chat({roomId}: {roomId: number}){
     const [chatData, setChatData] = useState([]);
 
     useEffect(() => {

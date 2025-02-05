@@ -32,3 +32,6 @@ Add this to package.json
 - Same User Can Join Multiple Rooms
 - Approach1: Global Variable
 
+- For Signup && Signin look similar, a single component can be made AuthPage.tsx, and it can accept a props based on which we can see singup or signin UI.
+
+- How to implement the mouse hold detection - I use combination of onMouseDown, onMouseUp, and onMouseMove (there are better ways to do this.)

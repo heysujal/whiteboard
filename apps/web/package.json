@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
+  "exports":{
+    "consts": "./app/config.ts"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

@@ -4,7 +4,10 @@ import {useState,  useEffect, useMemo } from "react";
 import { useSocket } from "../hooks/useSocket"
 
 // This is a client component which will initiate the connection to webSocketServer
-export function ChatRoomClient({chatData, id}){
+export function ChatRoomClient({chatData, id}: {
+    chatData: object,
+    id: number
+}){
     const [chats, setChats] = useState(chatData);
     const [currentMessage, setCurrentMessage] = useState('');
     const {socket, loading} = useSocket();
@@ -12,7 +15,7 @@ export function ChatRoomClient({chatData, id}){
     useEffect(() => {
         setChats(chatData)
     }, [chatData])
-    
+
     useEffect(() => {
         if(!loading && socket){
             socket.send(JSON.stringify({
