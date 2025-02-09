@@ -140,11 +140,40 @@ app.get('/chats/:roomId', middleware, async(req, res) => {
     }
 })
 
+app.post('/chats/:roomId', middleware, async (req, res) => {
+    const roomId = parseInt(req.params.roomId);
+    const shapeData = req.body.shapeData;
+    const userId = req.user.userId;
+    console.log({
+        roomId,
+        shapeData,
+        userId
+    })
+    try {
+        const {message} = await prismaClient.chat.create({
+            data: {
+                message: JSON.stringify(shapeData),
+                roomId: roomId,
+                userId: userId
+            },
+            select: {
+                message: true
+            }
+        })
+        res.status(201).json({
+            status:'Success',
+            message: 'Shape saved!' 
+        });
+    } catch (error) {
+        console.log(error)
+    }
+})
+
 app.get('/room/:slug', middleware, async (req, res) => {
     // user will give us slug
     // we find id of room using it
     let slug = req.params;
-    slug = 'room-1';
+    slug = 'room-1'; // TODO: remove this
     console.log(req.params)
     try {
         const roomData = await prismaClient.room.findFirst({
@@ -158,6 +187,8 @@ app.get('/room/:slug', middleware, async (req, res) => {
         console.log(error);
     }
 })
+
+
 
 let PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server is now running ${PORT}`));
