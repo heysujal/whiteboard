@@ -20,6 +20,9 @@ importers:
 
   apps/excalidraw-frontend:
     dependencies:
+      axios:
+        specifier: ^1.7.9
+        version: 1.7.9
       lucide-react:
         specifier: ^0.474.0
         version: 0.474.0(react@19.0.0)

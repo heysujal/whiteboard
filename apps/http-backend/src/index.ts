@@ -1,6 +1,5 @@
 import express, { Response } from 'express';
 import jwt from 'jsonwebtoken';
-import {supabaseClient} from '@repo/db/supabaseClient'
 import {prismaClient} from "@repo/db/prismaClient"
 import  {JWT_SECRET}  from '@repo/backend-common/config';
 import {SignUpSchema, SignInSchema, CreateRoomSchema} from "@repo/common/types"
@@ -123,6 +122,7 @@ app.post('/room', middleware, async(req, res)=>{
 app.get('/chats/:roomId', middleware, async(req, res) => {
     // Checks that can be added -> room permissions
     // Rate limiting -> Running for loop might fill the db
+    console.log(req.params.roomId)
     const roomId = parseInt(req.params.roomId);
     try {
         const savedChats = await prismaClient.chat.findMany({

@@ -37,3 +37,8 @@ Add this to package.json
 - How to implement the mouse hold detection - I used combination of onMouseDown, onMouseUp, and onMouseMove (there are better ways to do this.)
 
 - Migrating code to logic/game file
+
+- We seperate the logic into RoomCanvas and Canvas component to avoid the race conditions.(canvas being rendered before webSocket connection is made)
+
+- `npx prisma studio` to inspect database locally
+

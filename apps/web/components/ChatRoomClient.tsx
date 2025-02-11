@@ -32,7 +32,7 @@ export function ChatRoomClient({chatData, id}: {
                         message: parsedData.message,
                         roomId: id,
                         id: Date.now(),
-                    }, ...c, 
+                    }, ...c
                     ])
                 }
             }
