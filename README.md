@@ -1,3 +1,17 @@
+** How to Run Locally **
+
+This project uses `pnpm` so you need to install it first.
+
+1. Clone the repo
+2. Run `pnpm install`
+3. Start the DB locally using Docker or get from Neon or Supabase
+4. Create a .env file in db folder and put database connection string 
+5. Migrate the Database using `npx prisma migrate dev`
+6. Generate the Client using `npx prisma generate`
+7. Start http backend
+8. Start WS backend
+9. Start Frontend
+
 Notes:
 
 How to extend tsconfig.json
@@ -42,3 +56,13 @@ Add this to package.json
 
 - `npx prisma studio` to inspect database locally
 
+
+- used custom events to pass selected shape
+- More features
+    Add Signup and Signin page
+    Adding dashboard to show all the rooms created by user
+    Adding extra shapes, and text, 
+    Adding eraser(delete using id of message?)
+    Adding image feature
+    allow to undo/redo
+    select something and moving it around

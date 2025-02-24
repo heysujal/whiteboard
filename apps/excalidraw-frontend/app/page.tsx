@@ -2,8 +2,11 @@
 
 import { Pencil, Users, Share2, Layers, ArrowRight } from 'lucide-react';
 import Link from 'next/link'
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Navigation */}
@@ -45,12 +48,9 @@ export default function Home() {
                 Perfect for teams, educators, and creative minds.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg shadow-lg shadow-blue-600/20 flex items-center justify-center">
+                <button onClick={() => router.push(`/signin`)} className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg shadow-lg shadow-blue-600/20 flex items-center justify-center">
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </button>
-                <button className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors font-medium text-lg">
-                  Watch Demo
                 </button>
               </div>
             </div>

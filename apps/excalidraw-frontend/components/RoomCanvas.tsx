@@ -8,7 +8,8 @@ export function RoomCanvas({roomId}: {roomId: string}){
     const [socket, setSocket] = useState(null);
 
         useEffect(() => {
-            // TODO:  JWT should come from localStorage
+
+            const JWT_TOKEN = localStorage.getItem('token');
             const ws = new WebSocket(`${WS_URL}/?token=${JWT_TOKEN}`);
             ws.onopen = () => {
                 setSocket(ws);

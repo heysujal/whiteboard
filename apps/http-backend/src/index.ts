@@ -15,7 +15,7 @@ app.use(cors({credentials: true, origin: true}))
 
 app.post('/signup', async (req, res) => {
     
-    
+    console.log(req.body)
     try{
         const {data: body, error, success} = SignUpSchema.safeParse(req.body);
         if(error){
@@ -107,16 +107,43 @@ app.post('/room', middleware, async(req, res)=>{
             data:{
                 slug: roomData.roomName,
                 adminId: userId
-            }
+            },
+            
         })
 
 
-        res.status(201).json({status: "Success", message: "Room Created Successfully", room: room.id})
+        res.status(201).json({status: "Success", message: "Room Created Successfully", room: room})
 
     } catch (error) {
         console.log(error);
         res.status(500).json({status: "Error", message: "Internal Error Occured"});
     }
+})
+
+app.get('/getrooms', middleware, async (req, res) => {
+    // get all rooms created by a user
+    console.log(req.user.userId)
+
+    try {
+        const data = await prismaClient.room.findMany({
+            where: {
+                adminId: req.user.userId
+            }
+        })   
+
+        console.log(data);
+        return res.status(200).json({
+            message: 'Success',
+            data: data
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            status: 'Error',
+            message: 'Internal Server Error'
+        })
+    }
+    
 })
 
 app.get('/chats/:roomId', middleware, async(req, res) => {
@@ -137,6 +164,7 @@ app.get('/chats/:roomId', middleware, async(req, res) => {
         res.status(200).json(savedChats);
     } catch (error) {
         console.log(error)
+        return res.status(500).json({status: "Error", message: "Internal Error Occured"});
     }
 })
 
@@ -172,9 +200,8 @@ app.post('/chats/:roomId', middleware, async (req, res) => {
 app.get('/room/:slug', middleware, async (req, res) => {
     // user will give us slug
     // we find id of room using it
-    let slug = req.params;
-    slug = 'room-1'; // TODO: remove this
-    console.log(req.params)
+    const {slug} = req.params;
+ 
     try {
         const roomData = await prismaClient.room.findFirst({
             where: {
