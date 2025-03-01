@@ -158,8 +158,7 @@ app.get('/chats/:roomId', middleware, async(req, res) => {
             },
             orderBy:{
                 id: 'desc'
-            },
-            take: 50
+            }
         });
         res.status(200).json(savedChats);
     } catch (error) {

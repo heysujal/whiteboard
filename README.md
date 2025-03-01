@@ -59,10 +59,19 @@ Add this to package.json
 
 - used custom events to pass selected shape
 - More features
-    Add Signup and Signin page
-    Adding dashboard to show all the rooms created by user
-    Adding extra shapes, and text, 
-    Adding eraser(delete using id of message?)
-    Adding image feature
-    allow to undo/redo
-    select something and moving it around
+
+    - Add Signup and Signin page
+    
+    - Adding dashboard to show all the rooms created by user
+    
+    - Adding extra shapes, and text, 
+    
+    - Adding eraser(delete using id of message?)
+    
+    - Adding image feature
+    
+    - Allow to undo/redo
+    
+    - Allow moving shapes
+    
+    - Add delete room button

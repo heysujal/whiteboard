@@ -10,3 +10,9 @@ canvas {
 canvas::-webkit-scrollbar { 
     display: none;  /* Safari and Chrome */
 }
+
+canvas::before, canvas::after{
+    border-style: none !important;
+}
+
+ 
