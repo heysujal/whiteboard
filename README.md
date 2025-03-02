@@ -63,20 +63,95 @@ Add this to package.json
 
 - More features
 
-    - Add Signup and Signin page
+    - [x] Add Signup and Signin page
     
-    - Adding dashboard to show all the rooms created by user
+    - [x] Adding dashboard to show all the rooms created by user
     
-    - Adding extra shapes, and text, 
+    - [ ] Adding extra shapes, and text
     
-    - Adding eraser(delete using id of message?)
+    - [ ] Adding eraser(delete using id of message?)
     
-    - Adding image feature
+    - [ ] Adding image feature
     
-    - Allow to undo/redo
+    - [ ] Allow to undo/redo
     
-    - Allow moving shapes
+    - [ ] Allow moving shapes
     
-    - Add delete room button
+    - [ ] Add delete room button
 
-    - Allow resizing canvas
+    - [ ] Allow resizing canvas
+
+    - [ ] Add freehand drawing
+
+    - [ ] Add panning and zooming
+
+
+
+Tricky Bits
+
+```js
+    useEffect(() => {
+        if(!canvasRef || !canvasRef.current){
+            return;
+        }
+        alert('new instance created')
+        const b = new Board(canvasRef.current, roomId, socket);
+        setBoard(b);
+        return () => {
+            b.destroy();
+        }
+    }, [canvasRef])
+
+    useEffect(() => {
+        if (!board || !selectedShape) return;
+        board.setSelectedShapeType(selectedShape);
+    }, [selectedShape, board]);
+
+```
+
+
+When useEffect runs twice in strict mode.  
+Then it creates two instances of board.
+We lose access to first one but it is still there in memory with event listeners attached to it and using default shape 'rect'.
+
+The second one is the one which we have access over and we update the shape it uses
+
+So, when we draw we get two shapes because of two instances.
+
+Solution, is to remove event listener attached to old instance as a cleanup.
+
+# React StrictMode and useEffect Behavior Notes
+
+## When Cleanup Runs
+1. **Component Unmount**: When component is removed from DOM
+2. **Dependency Changes**: Before useEffect runs again due to dependency updates
+3. **StrictMode Development**: During the double-mounting process:
+   ```javascript
+   // First mount
+   const b1 = new Board(...);     // Create first instance
+   
+   // StrictMode triggers unmount
+   b1.destroy();                  // Cleanup runs, removing b1's listeners
+   
+   // Second mount
+   const b2 = new Board(...);     // Create second instance
+   ```
+
+## Example Scenarios
+1. **Route Change**: 
+   - User navigates away = cleanup runs
+   - Old Board instance destroyed
+
+2. **Dependency Updates**:
+   ```javascript
+   useEffect(() => {
+       const b = new Board(canvasRef.current, roomId, socket);
+       return () => b.destroy();
+   }, [roomId]) // If roomId changes:
+   // 1. Cleanup runs (old instance destroyed)
+   // 2. New instance created with new roomId
+   ```
+
+3. **Component Re-renders from Prop/State Changes**:
+   - If dependencies change = cleanup runs
+   - New instance created with updated values

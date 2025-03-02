@@ -10,12 +10,16 @@ export function Canvas({roomId, socket}: {roomId: number; socket: WebSocket}){
     const [selectedShape, setSelectedShape] = useState('rect');
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
+
     useEffect(() => {
         if(!canvasRef || !canvasRef.current){
             return;
         }
         const b = new Board(canvasRef.current, roomId, socket);
         setBoard(b);
+        return () => {
+            b.destroy();
+        }
     }, [canvasRef])
 
     useEffect(() => {

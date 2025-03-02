@@ -46,6 +46,13 @@ export class Board{
         this.initBoard();
     }
 
+    destroy(){
+        this.canvas.removeEventListener('resize', this.handleResize);
+        this.canvas.removeEventListener('mousedown', this.handleMouseDown);
+        this.canvas.removeEventListener('mouseup', this.handleMouseUp);
+        this.canvas.removeEventListener('mousemove', this.handleMouseMove);
+    }
+
     async initBoard(){
 
         this.canvas.width = window.innerWidth;
@@ -76,127 +83,110 @@ export class Board{
         }
     }
 
-    addMouseEventHandlers(){ 
-        console.log(this)
+    private handleResize = () => {
+        this.ctx.canvas.width = window.innerWidth;
+        this.ctx.canvas.height = window.innerHeight;
+    }
 
-        this.canvas.addEventListener('resize', () => {
-            this.ctx.canvas.width = window.innerWidth;
-            this.ctx.canvas.height = window.innerHeight;
-        })
-        this.canvas.addEventListener('mousedown', (e) => {
-            const rect = this.canvas.getBoundingClientRect();
-            this.startX = e.clientX - rect.left;
-            this.startY = e.clientY - rect.top;
-            this.isMouseDown = true;
-        });
+    private handleMouseDown = (e: MouseEvent) => {
+        const rect = this.canvas.getBoundingClientRect();
+        this.startX = e.clientX - rect.left;
+        this.startY = e.clientY - rect.top;
+        this.isMouseDown = true;
+    }
 
-        this.canvas.addEventListener('mouseup', (e) => {
-            const currentShapeType = this.selectedShapeType; // Capture current shape type
-            this.isMouseDown = false;
-            
-            if (!currentShapeType) {
+    private handleMouseUp = (e: MouseEvent) => {
+        const currentShapeType = this.selectedShapeType;
+        this.isMouseDown = false;
+        
+        if (!currentShapeType) {
+            return;
+        }
+
+        const rect = this.canvas.getBoundingClientRect();
+        const endX = e.clientX - rect.left;
+        const endY = e.clientY - rect.top;
+
+        let latestShape: Shape | null = null;
+        
+        if (currentShapeType === 'rect') {
+            const width = Math.abs(endX - this.startX);
+            const height = Math.abs(endY - this.startY);
+            const x = Math.min(this.startX, endX);
+            const y = Math.min(this.startY, endY);
+            if (!width || !height) {
                 return;
             }
+            latestShape = { type: 'rect', x, y, width, height };
+        }
+        else if (currentShapeType === 'circle') {
+            const centerX = this.startX + (endX - this.startX)/2;
+            const centerY = this.startY + (endY - this.startY)/2;
+            const radius = Math.round(Math.sqrt(Math.pow(endX - this.startX, 2) + Math.pow(endY - this.startY, 2)) / 2);
 
-            const rect = this.canvas.getBoundingClientRect();
-            const endX = e.clientX - rect.left;
-            const endY = e.clientY - rect.top;
-
-            let latestShape: Shape | null = null;
-            
-            if (currentShapeType === 'rect') {
-                const width = Math.abs(endX - this.startX);
-                const height = Math.abs(endY - this.startY);
-                const x = Math.min(this.startX, endX);
-                const y = Math.min(this.startY, endY);
-                if (!width || !height) {
-                    return;
-                }
-                latestShape = {
-                    type: 'rect',
-                    x,
-                    y,
-                    width,
-                    height
-                }
+            if(!radius) {
+                return;
             }
-            else if (currentShapeType === 'circle') {
-                const centerX = this.startX + (endX - this.startX)/2;
-                const centerY = this.startY + (endY - this.startY)/2;
-                const radius = Math.round(Math.sqrt(Math.pow(endX - this.startX, 2) + Math.pow(endY - this.startY, 2)) / 2);
-
-                if(!radius){
-                    return;
-                }
-
-                latestShape = {
-                    type: 'circle',
-                    centerX,
-                    centerY,
-                    radius
-                }
+            latestShape = { type: 'circle', centerX, centerY, radius };
+        }
+        else if (currentShapeType === 'line') {
+            if(this.startX === endX && this.startY === endY) {
+                return;
             }
-            else if (currentShapeType === 'line') {
-                if(this.startX === endX && this.startY === endY) {
-                    return;
-                }
-                
-                latestShape = {
-                    type: 'line',
-                    startX: this.startX,
-                    startY: this.startY,
-                    endX,
-                    endY
-                }
-            }
+            latestShape = { type: 'line', startX: this.startX, startY: this.startY, endX, endY };
+        }
 
-            if (latestShape) {
-                this.existingShapes.push(latestShape);  
-                this.socket.send(JSON.stringify({
-                    type: 'chat',
-                    message: JSON.stringify(latestShape),
-                    roomId: this.roomId
-                }))
-            }
-        });
+        if (latestShape) {
+            this.existingShapes.push(latestShape);  
+            this.socket.send(JSON.stringify({
+                type: 'chat',
+                message: JSON.stringify(latestShape),
+                roomId: this.roomId
+            }));
+        }
+    }
 
-        this.canvas.addEventListener('mousemove',  (e) => {
-            if (!this.isMouseDown || !this.selectedShapeType) return;
-            
-            // Clear the canvas and redraw existing shapes before drawing preview
-            this.ctx.strokeStyle = 'black';
-            const rect = this.canvas.getBoundingClientRect();
-            const endX = e.clientX - rect.left;
-            const endY = e.clientY - rect.top;
-            this.clearCanvasAndDraw();
-            // Drawing the shape being held down just for preview without saving it
-            if(this.selectedShapeType === 'rect'){
-                const width = Math.abs(endX - this.startX);
-                const height = Math.abs(endY - this.startY);
-                const x = Math.min(this.startX, endX);
-                const y = Math.min(this.startY, endY);
+    private handleMouseMove = (e: MouseEvent) => {
+        if (!this.isMouseDown || !this.selectedShapeType) return;
         
-                this.ctx.beginPath();
-                this.ctx.strokeRect(x, y, width, height);
-                this.ctx.closePath();
-            }
-            else if(this.selectedShapeType === 'circle'){
-                const centerX = (this.startX + endX) / 2;
-                const centerY = (this.startY + endY) / 2;
-                const radius = Math.sqrt(Math.pow(endX - this.startX, 2) + Math.pow(endY - this.startY, 2)) / 2;
-        
-                this.ctx.beginPath();
-                this.ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-                this.ctx.stroke();
-            }
-        
-            else if(this.selectedShapeType === 'line'){
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.startX, this.startY);
-                this.ctx.lineTo(endX, endY);
-                this.ctx.stroke();
-            }
-        });
+        this.ctx.strokeStyle = 'black';
+        const rect = this.canvas.getBoundingClientRect();
+        const endX = e.clientX - rect.left;
+        const endY = e.clientY - rect.top;
+        this.clearCanvasAndDraw();
+
+        if(this.selectedShapeType === 'rect') {
+            const width = Math.abs(endX - this.startX);
+            const height = Math.abs(endY - this.startY);
+            const x = Math.min(this.startX, endX);
+            const y = Math.min(this.startY, endY);
+    
+            this.ctx.beginPath();
+            this.ctx.strokeRect(x, y, width, height);
+            this.ctx.closePath();
+        }
+        else if(this.selectedShapeType === 'circle') {
+            const centerX = (this.startX + endX) / 2;
+            const centerY = (this.startY + endY) / 2;
+            const radius = Math.sqrt(Math.pow(endX - this.startX, 2) + Math.pow(endY - this.startY, 2)) / 2;
+    
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            this.ctx.stroke();
+        }
+        else if(this.selectedShapeType === 'line') {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.startX, this.startY);
+            this.ctx.lineTo(endX, endY);
+            this.ctx.stroke();
+        }
+    }
+
+    addMouseEventHandlers() { 
+        this.canvas.addEventListener('resize', this.handleResize);
+        this.canvas.addEventListener('mousedown', this.handleMouseDown);
+        this.canvas.addEventListener('mouseup', this.handleMouseUp);
+        this.canvas.addEventListener('mousemove', this.handleMouseMove);
     }
 
     clearCanvasAndDraw(){
