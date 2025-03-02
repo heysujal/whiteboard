@@ -1,10 +1,10 @@
 
-import { JWT_TOKEN, WS_URL } from "@/config";
+import { WS_URL } from "@/config";
 import { useEffect } from "react";
 import { useState } from "react";
 import { Canvas } from "@/components/Canvas";
 
-export function RoomCanvas({roomId}: {roomId: string}){
+export function RoomCanvas({roomId}: {roomId: number}){
     const [socket, setSocket] = useState(null);
 
         useEffect(() => {

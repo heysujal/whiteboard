@@ -58,6 +58,9 @@ Add this to package.json
 
 
 - used custom events to pass selected shape
+
+
+
 - More features
 
     - Add Signup and Signin page
@@ -75,3 +78,5 @@ Add this to package.json
     - Allow moving shapes
     
     - Add delete room button
+
+    - Allow resizing canvas

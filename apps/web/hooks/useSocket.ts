@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { JWT_TOKEN, WS_URL } from "../app/config";
+import { WS_URL } from "../app/config";
 
 export function useSocket (){
     const [loading, setLoading] = useState(true);
     const [socket, setSocket] = useState<WebSocket>();
+    const JWT_TOKEN = localStorage.getItem('token');
     useEffect(() => {
         const ws = new WebSocket(`${WS_URL}/?token=${JWT_TOKEN}`);
         ws.onopen = () => {

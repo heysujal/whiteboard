@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BACKEND_URL, JWT_TOKEN } from "../app/config";
+import { BACKEND_URL } from "../app/config";
 import { useEffect, useState } from "react";
 import { ChatRoomClient } from "./ChatRoomClient";
 
@@ -13,6 +13,7 @@ export default function Chat({roomId}: {roomId: number}){
             return;
         }
         async function getChatByRoomId (){
+            const JWT_TOKEN = localStorage.getItem('token')
             try {
                 const {data} = await axios.get(`${BACKEND_URL}/chats/${roomId}`, {
                     headers: {
