@@ -22,7 +22,8 @@ export default function Dashboard() {
 
 
     // Define the async action for creating a new room
-    async function createNewRoom(previousState, formData) {
+    // @ts-ignore
+    async function createNewRoom(_previousState, formData) {
         const roomName = formData.get("name");
         console.log(roomName)
 
@@ -132,12 +133,15 @@ export default function Dashboard() {
         </div>
     );
 }
+    // @ts-ignore
 
 const Card = ({ createdAt, slug }) => {
     const router = useRouter();
+        // @ts-ignore
 
     const getRelativeTime = (utcTimeStamp) => {
         const now = new Date();
+        // @ts-ignore
         const diffMs = now - new Date(utcTimeStamp);
         const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
