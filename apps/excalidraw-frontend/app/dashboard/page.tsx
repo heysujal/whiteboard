@@ -36,6 +36,7 @@ export default function Dashboard() {
 
             return { success: true, message: "Room created successfully!" };
         } catch (error) {
+            console.log(error)
             return { success: false, message: "Failed to create room" };
         }
     }
