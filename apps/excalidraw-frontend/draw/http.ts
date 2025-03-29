@@ -7,6 +7,7 @@ export async function getExistingShapes(roomId: number): Promise<Shape[]>{
         }
     });
     // @ts-expect-error
+    // this needs to be fixed later
 
     const parsedShapeData = savedShapes.map((s) => JSON.parse(s.message));
     console.log({savedShapes})

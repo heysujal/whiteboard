@@ -11,6 +11,7 @@ export function RoomCanvas({roomId}: {roomId: number}){
             const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_BACKEND ?? 'ws://localhost:8080' }/?token=${JWT_TOKEN}`);
             ws.onopen = () => {
                 // @ts-expect-error
+    // this needs to be fixed later
 
                 setSocket(ws);
                 ws.send(JSON.stringify({
