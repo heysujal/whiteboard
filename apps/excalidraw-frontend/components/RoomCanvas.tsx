@@ -1,5 +1,3 @@
-
-import { WS_URL } from "@/config";
 import { useEffect } from "react";
 import { useState } from "react";
 import { Canvas } from "@/components/Canvas";
