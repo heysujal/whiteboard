@@ -10,7 +10,7 @@ export function RoomCanvas({roomId}: {roomId: number}){
             const JWT_TOKEN = localStorage.getItem('token');
             const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_BACKEND ?? 'ws://localhost:8080' }/?token=${JWT_TOKEN}`);
             ws.onopen = () => {
-                // @ts-ignore
+                // @ts-expect-error
 
                 setSocket(ws);
                 ws.send(JSON.stringify({

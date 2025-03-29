@@ -6,7 +6,7 @@ export async function getExistingShapes(roomId: number): Promise<Shape[]>{
             Authorization: localStorage.getItem('token')
         }
     });
-    // @ts-ignore
+    // @ts-expect-error
 
     const parsedShapeData = savedShapes.map((s) => JSON.parse(s.message));
     console.log({savedShapes})

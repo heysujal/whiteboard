@@ -9,7 +9,7 @@ export function middleware(req: Request, res: Response, next: NextFunction){
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         // TODO: Add global.d.ts to fix this
-        // @ts-ignore
+        // @ts-expect-error
         req.user = decoded;
         next();
     } catch (error) {
