@@ -22,8 +22,7 @@ export default function Dashboard() {
 
 
     // Define the async action for creating a new room
-    // @ts-expect-error
-    // this needs to be fixed later
+// @ts-expect-error: This needs to be fixed later
     async function createNewRoom(_previousState, formData) {
         const roomName = formData.get("name");
         console.log(roomName)
@@ -134,18 +133,15 @@ export default function Dashboard() {
         </div>
     );
 }
-    // @ts-expect-error
-    // this needs to be fixed later
+// @ts-expect-error: This needs to be fixed later
 
 const Card = ({ createdAt, slug }) => {
     const router = useRouter();
-        // @ts-expect-error
-    // this needs to be fixed later
+    // @ts-expect-error: This needs to be fixed later
 
     const getRelativeTime = (utcTimeStamp) => {
         const now = new Date();
-        // @ts-expect-error
-    // this needs to be fixed later
+    // @ts-expect-error: This needs to be fixed later
         const diffMs = now - new Date(utcTimeStamp);
         const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 

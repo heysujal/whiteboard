@@ -8,18 +8,15 @@ import { IconButton } from "./IconButton";
 import { useRouter } from "next/navigation";
 
 export default function TopMenuBar({
-    // @ts-expect-error
-    // this needs to be fixed later
+// @ts-expect-error: This needs to be fixed later
   selectedShape,
-    // @ts-expect-error
-    // this needs to be fixed later
+// @ts-expect-error: This needs to be fixed later
 
   setSelectedShape,
 }) {
 
   const router = useRouter();
-    // @ts-expect-error
-    // this needs to be fixed later
+// @ts-expect-error: This needs to be fixed later
 
   const handleClick = (e) => {
     const clickedShapeType = e.target.closest("button[id]")?.id;
