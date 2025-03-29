@@ -1,9 +1,7 @@
-import { BACKEND_URL } from "@/config";
 import axios from "axios";
-
 import { Shape } from "./Board";
 export async function getExistingShapes(roomId: number): Promise<Shape[]>{
-    const {data: savedShapes} = await axios.get(`${BACKEND_URL}/chats/${roomId}`, {
+    const {data: savedShapes} = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chats/${roomId}`, {
         headers:{
             Authorization: localStorage.getItem('token')
         }

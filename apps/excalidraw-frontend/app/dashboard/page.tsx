@@ -1,5 +1,4 @@
 "use client";
-import { BACKEND_URL } from "@/config";
 import axios from "axios";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -21,7 +20,7 @@ export default function Dashboard() {
 
         try {
             const { data } = await axios.post(
-                `${BACKEND_URL}/room`, {
+                `${process.env.BACKEND_URL}/room`, {
                     roomName: roomName
                 }, 
                 {

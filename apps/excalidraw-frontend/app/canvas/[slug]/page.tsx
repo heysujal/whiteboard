@@ -1,6 +1,5 @@
 'use client'
 import { RoomCanvas } from "@/components/RoomCanvas";
-import { BACKEND_URL } from "@/config";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -16,7 +15,7 @@ export default function CanvasPage() {
 
         try {
             async function getRoomIdBySlug(){
-                const {data} = await axios.get(`${BACKEND_URL}/room/${slug}`, {
+                const {data} = await axios.get(`${NEXT_APP_BACKEND_URL}/room/${slug}`, {
                     headers: {
                         Authorization: localStorage.getItem('token')
                     }
