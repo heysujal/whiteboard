@@ -1,7 +1,6 @@
 import express, { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import {prismaClient} from "@repo/db/prismaClient"
-import  {JWT_SECRET}  from '@repo/backend-common/config';
 import {SignUpSchema, SignInSchema, CreateRoomSchema} from "@repo/common/types"
 import bcrypt from 'bcryptjs'
 import { middleware } from './middleware.js';
@@ -79,7 +78,7 @@ app.post('/signin',  async (req, res) => {
             res.status(401).json({ status: 'Unauthorized', message: 'Invalid Credentials'});
             return;
         }
-        const token = jwt.sign({userId}, JWT_SECRET);
+        const token = jwt.sign({userId}, process.env.JWT_SECRET);
         res.status(200).json({message: 'Verified!', token: token})
 
     } catch (error) {

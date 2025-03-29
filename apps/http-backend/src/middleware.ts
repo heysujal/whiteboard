@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "@repo/backend-common/config";
 
 export function middleware(req: Request, res: Response, next: NextFunction){
     const token = req.headers.authorization ?? "";
@@ -8,7 +7,7 @@ export function middleware(req: Request, res: Response, next: NextFunction){
         return res.status(401).json({ status: 'Error', message: 'Access token is missing or invalid' });
     }
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         // TODO: Add global.d.ts to fix this
         // @ts-ignore
         req.user = decoded;
