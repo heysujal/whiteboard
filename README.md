@@ -81,9 +81,9 @@ Add this to package.json
 
     - [ ] Allow resizing canvas
 
-    - [ ] Add freehand drawing
+    - [ ] Add freehand drawing (Challenging)
 
-    - [ ] Add panning and zooming
+    - [ ] Add panning and zooming   (Challenging)
 
 
 
