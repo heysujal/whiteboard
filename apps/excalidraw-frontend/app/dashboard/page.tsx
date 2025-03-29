@@ -3,12 +3,20 @@ import axios from "axios";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
- 
+
+interface Room {
+    id: string;
+    slug: string;
+    createdAt: string;
+}
 
 export default function Dashboard() {
-    const [existingRooms, setExistingRooms] = useState([]);
+    const [existingRooms, setExistingRooms] = useState<Room[]>([]);
     const [showForm, setShowForm] = useState(false)
-    const [state, formAction, isPending] = useActionState(createNewRoom, {});
+    const [state, formAction, isPending] = useActionState(createNewRoom, {
+        success: false,
+        message: ""
+    });
     const router = useRouter();
 
 
@@ -45,7 +53,7 @@ export default function Dashboard() {
     useEffect(() => {
         async function fetchExistingRooms() {
             try {
-                const { data } = await axios.get(`${BACKEND_URL}/getrooms`, {
+                const { data } = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/getrooms`, {
                     headers: {
                         Authorization: localStorage.getItem("token"),
                     },
