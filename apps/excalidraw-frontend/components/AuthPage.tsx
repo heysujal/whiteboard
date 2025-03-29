@@ -11,8 +11,8 @@ export function AuthPage({isSignin}: {isSignin: boolean}) {
     const passwordRef = useRef<HTMLInputElement>(null);
     const nameRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
-    const SIGNIN_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000'}/signup`
-    const SIGNUP_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000'}/signin`
+    const SIGNIN_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000'}/signin`
+    const SIGNUP_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000'}/signup`
     
     async function handleSubmit() {
         if (!emailRef.current?.value || !passwordRef.current?.value) return;
