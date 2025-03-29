@@ -1,6 +1,8 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import {prismaClient} from "@repo/db/prismaClient"
+import { PrismaClient } from '@prisma/client'
+const prismaClient = new PrismaClient()
+
 const wss = new WebSocketServer({ port: process.env.PORT });
 
 interface User {
