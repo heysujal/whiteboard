@@ -1,6 +1,9 @@
 import express, { Response } from 'express';
 import jwt from 'jsonwebtoken';
-import {prismaClient} from "@repo/db/prismaClient"
+import { PrismaClient } from '@prisma/client';
+const prismaClient = new PrismaClient()
+
+
 import {SignUpSchema, SignInSchema, CreateRoomSchema} from "@repo/common/types"
 import bcrypt from 'bcryptjs'
 import { middleware } from './middleware.js';

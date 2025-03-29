@@ -87,6 +87,9 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
+      prisma:
+        specifier: ^6.2.1
+        version: 6.5.0(typescript@5.8.2)
     devDependencies:
       '@repo/backend-common':
         specifier: workspace:*
