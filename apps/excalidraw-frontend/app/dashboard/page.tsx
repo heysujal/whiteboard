@@ -29,7 +29,7 @@ export default function Dashboard() {
 
         try {
             const { data } = await axios.post(
-                `${process.env.BACKEND_URL}/room`, {
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/room`, {
                     roomName: roomName
                 }, 
                 {
