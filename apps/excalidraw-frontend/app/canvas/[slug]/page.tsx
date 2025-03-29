@@ -15,7 +15,7 @@ export default function CanvasPage() {
 
         try {
             async function getRoomIdBySlug(){
-                const {data} = await axios.get(`${NEXT_APP_BACKEND_URL}/room/${slug}`, {
+                const {data} = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/room/${slug}`, {
                     headers: {
                         Authorization: localStorage.getItem('token')
                     }
