@@ -1,8 +1,12 @@
 import {
   CircleIcon,
+  Eraser,
   HomeIcon,
   Minus,
   RectangleHorizontalIcon,
+  Text,
+  Type,
+  
 } from "lucide-react";
 import { IconButton } from "./IconButton";
 import { useRouter } from "next/navigation";
@@ -36,6 +40,14 @@ export default function TopMenuBar({
       id: "line",
       icon: <Minus />,
     },
+    {
+      id: "text",
+      icon: <Type />
+    },
+    {
+      id: "eraser",
+      icon: <Eraser/>
+    }
   ];
 
   return (

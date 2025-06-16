@@ -12,7 +12,8 @@ const app = express();
 const SALT_ROUNDS = 10;
 
 app.use(express.json());
-app.use(cors({credentials: true, origin: true}))
+app.use(cors());
+
 
 
 app.post('/signup', async (req, res) => {
@@ -195,6 +196,49 @@ app.post('/chats/:roomId', middleware, async (req, res) => {
         });
     } catch (error) {
         console.log(error)
+    }
+})
+
+app.delete('/chats/:roomId', middleware, async (req, res) => {
+    const roomId = parseInt(req.params.roomId);
+    const { shapeId } = req.body;
+    const userId = req.user.userId;
+
+    try {
+        // Find the chat message containing the shape
+        const chat = await prismaClient.chat.findFirst({
+            where: {
+                roomId: roomId,
+                message: {
+                    contains: JSON.stringify({ id: shapeId })
+                }
+            }
+        });
+
+        if (!chat) {
+            return res.status(404).json({
+                status: 'Error',
+                message: 'Shape not found'
+            });
+        }
+
+        // Delete the chat message
+        await prismaClient.chat.delete({
+            where: {
+                id: chat.id
+            }
+        });
+
+        res.status(200).json({
+            status: 'Success',
+            message: 'Shape deleted successfully'
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal server error'
+        });
     }
 })
 

@@ -1,23 +1,29 @@
 import { getExistingShapes } from "./http";
 
 export type Shape = {
+    id: string,
     type: 'rect',
     x: number,
     y: number
     width: number,
     height: number
 } | {
+    id: string,
     type: 'circle',
     centerX: number,
     centerY: number,
     radius: number
     
 } | {
+    id: string,
     type: 'line',
     startX: number,
     startY: number,
     endX: number,
     endY: number,
+} | {
+    type: 'eraser',
+    erasedShape: Shape
 }
 
 export class Board{
@@ -76,10 +82,40 @@ export class Board{
 
             if(parsedData.type === 'chat'){
                 const newShape = JSON.parse(parsedData.message)
-                this.existingShapes.push(newShape);
+                if (newShape.type === 'eraser') {
+                    // Remove the erased shape
+                    this.existingShapes = this.existingShapes.filter(
+                        shape => !this.areShapesEqual(shape, newShape.erasedShape)
+                    );
+                } else {
+                    this.existingShapes.push(newShape);
+                }
                 // re- draw
                 this.clearCanvasAndDraw();
             }
+        }
+    }
+
+    private areShapesEqual(shape1: Shape, shape2: Shape): boolean {
+        if (shape1.type !== shape2.type) return false;
+        
+        switch (shape1.type) {
+            case 'rect':
+                return shape1.x === shape2.x && 
+                       shape1.y === shape2.y && 
+                       shape1.width === shape2.width && 
+                       shape1.height === shape2.height;
+            case 'circle':
+                return shape1.centerX === shape2.centerX && 
+                       shape1.centerY === shape2.centerY && 
+                       shape1.radius === shape2.radius;
+            case 'line':
+                return shape1.startX === shape2.startX && 
+                       shape1.startY === shape2.startY && 
+                       shape1.endX === shape2.endX && 
+                       shape1.endY === shape2.endY;
+            default:
+                return false;
         }
     }
 
@@ -117,7 +153,14 @@ export class Board{
             if (!width || !height) {
                 return;
             }
-            latestShape = { type: 'rect', x, y, width, height };
+            latestShape = { 
+                id: crypto.randomUUID(),
+                type: 'rect', 
+                x, 
+                y, 
+                width, 
+                height 
+            };
         }
         else if (currentShapeType === 'circle') {
             const centerX = this.startX + (endX - this.startX)/2;
@@ -127,13 +170,26 @@ export class Board{
             if(!radius) {
                 return;
             }
-            latestShape = { type: 'circle', centerX, centerY, radius };
+            latestShape = { 
+                id: crypto.randomUUID(),
+                type: 'circle', 
+                centerX, 
+                centerY, 
+                radius 
+            };
         }
         else if (currentShapeType === 'line') {
             if(this.startX === endX && this.startY === endY) {
                 return;
             }
-            latestShape = { type: 'line', startX: this.startX, startY: this.startY, endX, endY };
+            latestShape = { 
+                id: crypto.randomUUID(),
+                type: 'line', 
+                startX: this.startX, 
+                startY: this.startY, 
+                endX, 
+                endY 
+            };
         }
 
         if (latestShape) {
@@ -179,6 +235,57 @@ export class Board{
             this.ctx.moveTo(this.startX, this.startY);
             this.ctx.lineTo(endX, endY);
             this.ctx.stroke();
+        }
+        else if(this.selectedShapeType === 'eraser') {
+            // When eraser is selected, check if mouse is over any shape
+            const mouseX = endX;
+            const mouseY = endY;
+            
+            // Find shapes that intersect with the eraser
+            const shapesToRemove = this.existingShapes.filter(shape => {
+                if (shape.type === 'rect') {
+                    return mouseX >= shape.x && 
+                           mouseX <= shape.x + shape.width && 
+                           mouseY >= shape.y && 
+                           mouseY <= shape.y + shape.height;
+                } else if (shape.type === 'circle') {
+                    const distance = Math.sqrt(
+                        Math.pow(mouseX - shape.centerX, 2) + 
+                        Math.pow(mouseY - shape.centerY, 2)
+                    );
+                    return distance <= shape.radius;
+                } else if (shape.type === 'line') {
+                    // Check if point is near the line
+                    const lineLength = Math.sqrt(
+                        Math.pow(shape.endX - shape.startX, 2) + 
+                        Math.pow(shape.endY - shape.startY, 2)
+                    );
+                    const distance = Math.abs(
+                        (shape.endY - shape.startY) * mouseX - 
+                        (shape.endX - shape.startX) * mouseY + 
+                        shape.endX * shape.startY - 
+                        shape.endY * shape.startX
+                    ) / lineLength;
+                    return distance < 5; // 5 pixels threshold
+                }
+                return false;
+            });
+
+            // Remove the shapes that were erased
+            if (shapesToRemove.length > 0) {
+                this.existingShapes = this.existingShapes.filter(
+                    shape => !shapesToRemove.includes(shape)
+                );
+                
+                // Notify other users about the erased shapes
+                shapesToRemove.forEach(shape => {
+                    this.socket.send(JSON.stringify({
+                        type: 'chat',
+                        message: JSON.stringify({ type: 'eraser', erasedShape: shape }),
+                        roomId: this.roomId
+                    }));
+                });
+            }
         }
     }
 

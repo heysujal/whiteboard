@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client'
 const prismaClient = new PrismaClient()
 
-const wss = new WebSocketServer({ port: process.env.PORT });
+const wss = new WebSocketServer({ port: process.env.PORT || '8080'});
 
 interface User {
   ws: WebSocket,
@@ -61,10 +61,44 @@ wss.on('connection', function connection(ws, req) {
     }
     else if(parsedMessage.type === "chat"){
       const message = parsedMessage.message;
-      // Add Processing Message => Checks
+      const parsedShape = JSON.parse(message);
 
-      // Send this message to all users who are joined into this room
+      // Handle eraser messages
+      if (parsedShape.type === 'eraser') {
+        try {
+          // Find and delete the chat message containing the erased shape
+          const chat = await prismaClient.chat.findFirst({
+            where: {
+              roomId,
+              message: {
+                contains: JSON.stringify(parsedShape.erasedShape)
+              }
+            }
+          });
 
+          if (chat) {
+            await prismaClient.chat.delete({
+              where: {
+                id: chat.id
+              }
+            });
+          }
+
+          // Broadcast the eraser message to all users in the room
+          users.forEach((user) => {
+            if(user.rooms.includes(roomId)){
+              user.ws.send(JSON.stringify({
+                type: "chat",
+                message,
+                roomId
+              }));
+            }
+          });
+        } catch (error) {
+          console.log(error);
+        }
+        return;
+      }
 
       // Diff Approach to take
       // App1. Store then forward messages
