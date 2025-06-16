@@ -3,6 +3,7 @@ import {
   Eraser,
   HomeIcon,
   Minus,
+  PenLineIcon,
   RectangleHorizontalIcon,
   Text,
   Type,
@@ -47,6 +48,10 @@ export default function TopMenuBar({
     {
       id: "eraser",
       icon: <Eraser/>
+    },
+    {
+      id: "freehand",
+      icon: <PenLineIcon/>
     }
   ];
 
