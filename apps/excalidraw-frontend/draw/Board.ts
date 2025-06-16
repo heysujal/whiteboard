@@ -1,6 +1,6 @@
 import { getExistingShapes } from "./http";
 
-export type Shape = {
+export type Tool = {
     id: string,
     type: 'rect',
     x: number,
@@ -23,7 +23,7 @@ export type Shape = {
     endY: number,
 } | {
     type: 'eraser',
-    erasedShape: Shape
+    erasedShape: Tool
 }
 
 export class Board{
@@ -35,7 +35,7 @@ export class Board{
     private isMouseDown: boolean;
     private startX: number;
     private startY: number;
-    private existingShapes: Shape[];
+    private existingShapes: Tool[];
     private selectedShapeType: string;
     // constructor can't be async so making a seperate init function
     constructor(canvas: HTMLCanvasElement, roomId: number, socket: WebSocket){
@@ -96,24 +96,30 @@ export class Board{
         }
     }
 
-    private areShapesEqual(shape1: Shape, shape2: Shape): boolean {
+    private areShapesEqual(shape1: Tool, shape2: Tool): boolean {
         if (shape1.type !== shape2.type) return false;
         
         switch (shape1.type) {
             case 'rect':
+                if (shape2.type !== 'rect') return false;
                 return shape1.x === shape2.x && 
                        shape1.y === shape2.y && 
                        shape1.width === shape2.width && 
                        shape1.height === shape2.height;
             case 'circle':
+                if (shape2.type !== 'circle') return false;
                 return shape1.centerX === shape2.centerX && 
                        shape1.centerY === shape2.centerY && 
                        shape1.radius === shape2.radius;
             case 'line':
+                if (shape2.type !== 'line') return false;
                 return shape1.startX === shape2.startX && 
                        shape1.startY === shape2.startY && 
                        shape1.endX === shape2.endX && 
                        shape1.endY === shape2.endY;
+            case 'eraser':
+                if (shape2.type !== 'eraser') return false;
+                return this.areShapesEqual(shape1.erasedShape, shape2.erasedShape);
             default:
                 return false;
         }
@@ -143,7 +149,7 @@ export class Board{
         const endX = e.clientX - rect.left;
         const endY = e.clientY - rect.top;
 
-        let latestShape: Shape | null = null;
+        let latestShape: Tool | null = null;
         
         if (currentShapeType === 'rect') {
             const width = Math.abs(endX - this.startX);
