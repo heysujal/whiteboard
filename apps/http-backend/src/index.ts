@@ -149,6 +149,53 @@ app.get('/getrooms', middleware, async (req, res) => {
     
 })
 
+app.delete('/room/:roomId', middleware, async (req, res) => {
+    const roomId = parseInt(req.params.roomId);
+    const userId = req.user.userId;
+
+    try {
+        // Check if room exists and user is the admin
+        const room = await prismaClient.room.findFirst({
+            where: {
+                id: roomId,
+                adminId: userId
+            }
+        });
+
+        if (!room) {
+            return res.status(404).json({
+                status: 'Error',
+                message: 'Room not found or you do not have permission to delete it'
+            });
+        }
+
+        // Delete all chats associated with the room first
+        await prismaClient.chat.deleteMany({
+            where: {
+                roomId: roomId
+            }
+        });
+
+        // Delete the room
+        await prismaClient.room.delete({
+            where: {
+                id: roomId
+            }
+        });
+
+        res.status(200).json({
+            status: 'Success',
+            message: 'Room deleted successfully'
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            status: 'Error',
+            message: 'Internal server error'
+        });
+    }
+})
+
 app.get('/chats/:roomId', middleware, async(req, res) => {
     // Checks that can be added -> room permissions
     // Rate limiting -> Running for loop might fill the db

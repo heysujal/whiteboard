@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { MinusIcon, PlusIcon } from "lucide-react";
+import { MinusIcon, PlusIcon, Trash2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 
@@ -12,17 +12,16 @@ interface Room {
 
 export default function Dashboard() {
     const [existingRooms, setExistingRooms] = useState<Room[]>([]);
-    const [showForm, setShowForm] = useState(false)
+    const [showForm, setShowForm] = useState(false);
+    const [deletingRoomId, setDeletingRoomId] = useState<string | null>(null);
     const [state, formAction, isPending] = useActionState(createNewRoom, {
         success: false,
         message: ""
     });
     const router = useRouter();
 
-
-
     // Define the async action for creating a new room
-// @ts-expect-error: This needs to be fixed later
+    // @ts-expect-error: This needs to be fixed later
     async function createNewRoom(_previousState, formData) {
         const roomName = formData.get("name");
         console.log(roomName)
@@ -50,6 +49,32 @@ export default function Dashboard() {
         }
     }
 
+    const deleteRoom = async (roomId: string, roomSlug: string) => {
+        if (!confirm(`Are you sure you want to delete the room "${roomSlug}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        setDeletingRoomId(roomId);
+        
+        try {
+            await axios.delete(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/room/${roomId}`,
+                {
+                    headers: {
+                        Authorization: localStorage.getItem("token"),
+                    },
+                }
+            );
+
+            // Remove the room from the local state
+            setExistingRooms((prev) => prev.filter(room => room.id !== roomId));
+        } catch (error) {
+            console.error('Error deleting room:', error);
+            alert('Failed to delete room. Please try again.');
+        } finally {
+            setDeletingRoomId(null);
+        }
+    };
 
     useEffect(() => {
         async function fetchExistingRooms() {
@@ -124,7 +149,12 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {existingRooms.length > 0 ? (
                     existingRooms.map((room) => (
-                        <Card key={room.id} createdAt={room.createdAt} slug={room.slug} />
+                        <Card 
+                            key={room.id} 
+                            room={room}
+                            onDelete={deleteRoom}
+                            isDeleting={deletingRoomId === room.id}
+                        />
                     ))
                 ) : (
                     <p className="text-gray-500">No rooms found.</p>
@@ -133,16 +163,19 @@ export default function Dashboard() {
         </div>
     );
 }
-// @ts-expect-error: This needs to be fixed later
 
-const Card = ({ createdAt, slug }) => {
+interface CardProps {
+    room: Room;
+    onDelete: (roomId: string, roomSlug: string) => void;
+    isDeleting: boolean;
+}
+
+const Card = ({ room, onDelete, isDeleting }: CardProps) => {
     const router = useRouter();
-    // @ts-expect-error: This needs to be fixed later
 
-    const getRelativeTime = (utcTimeStamp) => {
+    const getRelativeTime = (utcTimeStamp: string) => {
         const now = new Date();
-    // @ts-expect-error: This needs to be fixed later
-        const diffMs = now - new Date(utcTimeStamp);
+        const diffMs = now.getTime() - new Date(utcTimeStamp).getTime();
         const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
         if (diffDays > 0) {
@@ -152,12 +185,51 @@ const Card = ({ createdAt, slug }) => {
         }
     };
 
+    const handleCardClick = (e: React.MouseEvent) => {
+        // Don't navigate if clicking on the delete button
+        if ((e.target as HTMLElement).closest('.delete-button')) {
+            return;
+        }
+        router.push(`canvas/${room.slug}`);
+    };
+
+    const handleDeleteClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onDelete(room.id, room.slug);
+    };
+
     return (
-        <div onClick={() => {
-            router.push(`canvas/${slug}`)
-        }} className="bg-gray-100 p-4 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer">
-            <h4 className="text-xl font-semibold text-gray-900">{slug}</h4>
-            <p className="text-sm text-gray-600 mt-1">Created: {getRelativeTime(createdAt)}</p>
+        <div 
+            onClick={handleCardClick} 
+            className="bg-gray-100 p-4 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer relative group"
+        >
+            {/* Delete Button */}
+            <button
+                onClick={handleDeleteClick}
+                disabled={isDeleting}
+                className="delete-button absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Delete room"
+            >
+                {isDeleting ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                    <Trash2 size={16} />
+                )}
+            </button>
+
+            {/* Room Info */}
+            <h4 className="text-xl font-semibold text-gray-900 pr-8">{room.slug}</h4>
+            <p className="text-sm text-gray-600 mt-1">Created: {getRelativeTime(room.createdAt)}</p>
+            
+            {/* Delete Confirmation Overlay */}
+            {isDeleting && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                    <div className="bg-white p-3 rounded-lg flex items-center space-x-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <span className="text-sm text-gray-700">Deleting...</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
