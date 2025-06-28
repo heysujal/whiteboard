@@ -5,7 +5,6 @@ import {
   Minus,
   PenLineIcon,
   RectangleHorizontalIcon,
-  Type,
   
 } from "lucide-react";
 import { IconButton } from "./IconButton";
@@ -40,10 +39,10 @@ export default function TopMenuBar({
       id: "line",
       icon: <Minus />,
     },
-    {
-      id: "text",
-      icon: <Type />
-    },
+    // {
+    //   id: "text",
+    //   icon: <Type />
+    // },
     {
       id: "eraser",
       icon: <Eraser/>
