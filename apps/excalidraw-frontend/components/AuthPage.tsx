@@ -1,28 +1,89 @@
 'use client'
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
-import { Pencil } from 'lucide-react';
+import { useRef, useState } from "react";
+import { Pencil, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
+interface ValidationErrors {
+    name?: string;
+    email?: string;
+    password?: string;
+    general?: string;
+}
 
 export function AuthPage({isSignin}: {isSignin: boolean}) {
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const nameRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
+    
+    const [errors, setErrors] = useState<ValidationErrors>({});
+    const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    
     const SIGNIN_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000'}/signin`
     const SIGNUP_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000'}/signup`
-    
+
+    const validateEmail = (email: string): string | undefined => {
+        if (!email) return 'Email is required';
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) return 'Please enter a valid email address';
+        return undefined;
+    };
+
+    const validatePassword = (password: string): string | undefined => {
+        if (!password) return 'Password is required';
+        if (password.length < 6) return 'Password must be at least 6 characters long';
+        if (!isSignin && password.length < 8) return 'Password must be at least 8 characters long';
+        return undefined;
+    };
+
+    const validateName = (name: string): string | undefined => {
+        if (!isSignin && !name) return 'Name is required';
+        if (!isSignin && name.length < 2) return 'Name must be at least 2 characters long';
+        if (!isSignin && name.length > 50) return 'Name must be less than 50 characters';
+        return undefined;
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors: ValidationErrors = {};
+        
+        const email = emailRef.current?.value || '';
+        const password = passwordRef.current?.value || '';
+        const name = nameRef.current?.value || '';
+
+        const emailError = validateEmail(email);
+        const passwordError = validatePassword(password);
+        const nameError = validateName(name);
+
+        if (emailError) newErrors.email = emailError;
+        if (passwordError) newErrors.password = passwordError;
+        if (nameError) newErrors.name = nameError;
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const clearErrors = () => {
+        setErrors({});
+    };
+
     async function handleSubmit() {
-        if (!emailRef.current?.value || !passwordRef.current?.value) return;
+        clearErrors();
+        
+        if (!validateForm()) {
+            return;
+        }
+
+        setIsLoading(true);
         
         try {
             const { data } = await axios.post(
                 isSignin ? SIGNIN_ENDPOINT : SIGNUP_ENDPOINT, 
                 {
-                    email: emailRef.current.value,
-                    password: passwordRef.current.value,
+                    email: emailRef.current?.value,
+                    password: passwordRef.current?.value,
                     ...(nameRef.current?.value && {name: nameRef.current.value})
                 }
             );
@@ -35,9 +96,20 @@ export function AuthPage({isSignin}: {isSignin: boolean}) {
             }
         } catch (error) {
             const axiosError = error as AxiosError<{message: string}>;
-            alert(axiosError.response?.data?.message || 'An error occurred');
+            const errorMessage = axiosError.response?.data?.message || 'An error occurred';
+            setErrors({ general: errorMessage });
+        } finally {
+            setIsLoading(false);
         }
     }
+
+    const getInputClassName = (fieldName: keyof ValidationErrors) => {
+        const baseClasses = "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all";
+        const errorClasses = "border-red-300 focus:ring-red-500";
+        const normalClasses = "border-gray-200 focus:ring-blue-500";
+        
+        return `${baseClasses} ${errors[fieldName] ? errorClasses : normalClasses}`;
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
@@ -56,41 +128,92 @@ export function AuthPage({isSignin}: {isSignin: boolean}) {
                     <h1 className="text-2xl font-bold text-gray-900 mb-6">
                         {isSignin ? 'Welcome back' : 'Create your account'}
                     </h1>
+                    
+                    {/* General Error Message */}
+                    {errors.general && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                            <AlertCircle className="h-4 w-4 text-red-500" />
+                            <span className="text-sm text-red-700">{errors.general}</span>
+                        </div>
+                    )}
+
                     <div className="space-y-4">
                         {!isSignin && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                                 <input
                                     ref={nameRef}
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    className={getInputClassName('name')}
                                     placeholder="Enter your name"
+                                    onChange={clearErrors}
                                 />
+                                {errors.name && (
+                                    <p className="text-sm text-red-600 mt-1 flex items-center space-x-1">
+                                        <AlertCircle className="h-3 w-3" />
+                                        <span>{errors.name}</span>
+                                    </p>
+                                )}
                             </div>
                         )}
+                        
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                             <input
                                 ref={emailRef}
                                 type="email"
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className={getInputClassName('email')}
                                 placeholder="Enter your email"
+                                onChange={clearErrors}
                             />
+                            {errors.email && (
+                                <p className="text-sm text-red-600 mt-1 flex items-center space-x-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    <span>{errors.email}</span>
+                                </p>
+                            )}
                         </div>
+                        
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <input
-                                ref={passwordRef}
-                                type="password"
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                placeholder="Enter your password"
-                            />
+                            <div className="relative">
+                                <input
+                                    ref={passwordRef}
+                                    type={showPassword ? "text" : "password"}
+                                    className={getInputClassName('password')}
+                                    placeholder="Enter your password"
+                                    onChange={clearErrors}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <p className="text-sm text-red-600 mt-1 flex items-center space-x-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    <span>{errors.password}</span>
+                                </p>
+                            )}
                         </div>
+                        
                         <button 
                             onClick={handleSubmit}
-                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors mt-6"
+                            disabled={isLoading}
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors mt-6 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center"
                         >
-                            {isSignin ? 'Sign in' : 'Create account'}
+                            {isLoading ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <span>{isSignin ? 'Signing in...' : 'Creating account...'}</span>
+                                </div>
+                            ) : (
+                                <span>{isSignin ? 'Sign in' : 'Create account'}</span>
+                            )}
                         </button>
+                        
                         <p className="text-center text-sm text-gray-600 mt-4">
                             {isSignin ? "Don't have an account? " : "Already have an account? "}
                             <Link 
