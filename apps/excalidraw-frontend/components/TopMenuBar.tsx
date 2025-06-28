@@ -5,7 +5,6 @@ import {
   Minus,
   PenLineIcon,
   RectangleHorizontalIcon,
-  Text,
   Type,
   
 } from "lucide-react";
